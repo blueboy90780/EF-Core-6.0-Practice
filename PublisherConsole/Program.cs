@@ -3,7 +3,7 @@
 // Reading and Writing Data to the PubDatabase
 
 using PublisherData;
-
+using PublisherDomain;
 
 namespace PublisherConsole;
 
@@ -11,25 +11,29 @@ class Program
 {
     public static void Main()
     {
-        // Instantiates PubContext class, get it's Database (inherited DbContext) property and then call the EnsureCreated() method. This will cause EF Core to read the provider and connection string defined in the PubContext class and then go look to see if the database exist. If it does not, it'll read the context, determine what the database should look like and create one on the fly
-        using PubContext context = new PubContext(); // TODO: Look up on what the using statement is really about
-        context.Database.EnsureCreated();
-
-        GetAuthors();
+        // Instantiates PubContext class, get it's Database (inherited DbContext) property and then call the EnsureCreated() method.
+        using PubContext context = new PubContext();
+        context.Database.EnsureCreated(); //This will cause EF Core to read the provider (invoke OnConfiguring()) and connection string then go look to see if the database exist. If it does not, it'll create a new database on the fly
         
-        // Method
+        AddAuthor(); // Writes data to the database
+        GetAuthors(); // Reading data from the database
+        
+        // Special Methods
         void GetAuthors()
         {
-            // Creates a new instance of PubContext
-            using var context = new PubContext();
-            
-            // Converts the authors table into a collection List<T>
-            var authors = context.Authors.ToList(); // Weird yellow icon on "ToList" is apparently a LINQ method
-
+            // using var context = new PubContext(); // No conflict with variable above?????
+            var authors = context.Authors.ToList(); // Turns the entire Authors table into a single collection, this is done through quering
             foreach (var author in authors)
             {
                 Console.WriteLine(author.FirstName + " " + author.LastName);
             }
+        }
+        
+        void AddAuthor()
+        {
+            Author author = new Author { FirstName = "Julie", LastName = "Lerman" }; // TODO: Explore this syntax thing
+            context.Authors.Add(author);
+            context.SaveChanges();
         }
     }
 }

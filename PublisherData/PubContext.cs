@@ -13,10 +13,17 @@ public class PubContext:DbContext
     public DbSet<Book> Books { get; set; }
     
     // With EF Core, you need to tell the context what database provider you use and explicitly give it a connection string
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public string DbPath { get; }
+
+    public PubContext()
     {
-        // UseSQLServer accepts a connection strings as it's argument which is "string used to open a SQL Server database."
-        optionsBuilder.UseSqlServer(
-            "Data Source = (localdb)\\MSSQLLocalDB; Initial Catalog = PubDatabase"); // Where PubDataBase is the database's name
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        DbPath = System.IO.Path.Join(path, "PublisherDB.db");
     }
+
+    // The following configures EF to create a Sqlite database file in the
+    // special "local" folder for your platform.
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite($"Data Source={DbPath}"); // apparently connectionString is literally a file path to where the database will be made wrapped with 'Data Source='
 }
